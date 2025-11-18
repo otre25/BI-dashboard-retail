@@ -13,7 +13,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   company: null,
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: false, // Start with false for faster initial render
 
   login: async (credentials) => {
     console.log('[AuthStore] Login attempt for:', credentials.email);
@@ -51,11 +51,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
   checkAuth: async () => {
     console.log('[AuthStore] checkAuth called');
     try {
-      set({ isLoading: true });
+      // Don't set loading to true - keep UI responsive
 
-      // Add timeout to prevent infinite loading
+      // Add aggressive timeout for faster initial load
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Auth check timeout')), 10000)
+        setTimeout(() => reject(new Error('Auth check timeout')), 3000)
       );
 
       const result = await Promise.race([
@@ -82,6 +82,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
     } catch (error) {
       console.error('[AuthStore] Check auth error:', error);
+      // On timeout or error, assume not authenticated
       set({
         user: null,
         company: null,

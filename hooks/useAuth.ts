@@ -7,11 +7,8 @@ import type { Permissions } from '../types/auth.types';
 export function useAuth() {
   const { user, company, isAuthenticated, isLoading, checkAuth, login, logout } = useAuthStore();
 
-  // Check auth on mount
+  // Subscribe to auth changes only (no initial check for faster load)
   useEffect(() => {
-    checkAuth();
-
-    // Subscribe to auth changes
     const { data: { subscription } } = authService.onAuthStateChange(async (event) => {
       if (event === 'SIGNED_IN') {
         await checkAuth();
