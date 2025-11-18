@@ -17,6 +17,7 @@ import { cn } from './lib/utils';
 import { SortableChart } from './components/SortableChart';
 import { useUrlState } from './hooks/useUrlState';
 import { ApiSettingsPanel } from './components/settings/ApiSettingsPanel';
+import { DataSourcePanel } from './components/settings/DataSourcePanel';
 import {
   DndContext,
   closestCenter,
@@ -33,7 +34,7 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 
-export type View = 'dashboard' | 'advertising' | 'sales' | 'reports' | 'settings';
+export type View = 'dashboard' | 'advertising' | 'sales' | 'reports' | 'settings' | 'datasources';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -113,6 +114,8 @@ function App() {
         return <ReportsSection />;
       case 'settings':
         return <ApiSettingsPanel />;
+      case 'datasources':
+        return <DataSourcePanel />;
       default:
         return null;
     }

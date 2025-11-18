@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, Megaphone, TrendingUp, FileText, Settings } from 'lucide-react';
+import { BarChart3, Megaphone, TrendingUp, FileText, Settings, Database } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { type View } from '../App';
 
@@ -15,6 +15,7 @@ export function Header({ currentView, setCurrentView }: HeaderProps) {
     { id: 'sales' as View, label: 'Sales', icon: TrendingUp },
     { id: 'reports' as View, label: 'Reports & Alerts', icon: FileText },
     { id: 'settings' as View, label: 'Impostazioni API', icon: Settings },
+    { id: 'datasources' as View, label: 'Sorgenti Dati', icon: Database },
   ];
 
   return (
