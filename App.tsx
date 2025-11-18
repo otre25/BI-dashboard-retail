@@ -63,7 +63,7 @@ function App() {
   }
 
   const { dateRange, selectedStoreIds, selectedChannel, chartOrder, setChartOrder, expandedCharts } = useDashboardStore();
-  const { data, isLoading } = useKPIData(dateRange.from, dateRange.to, selectedStoreIds, selectedChannel);
+  const { data, isLoading: isLoadingData } = useKPIData(dateRange.from, dateRange.to, selectedStoreIds, selectedChannel);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -88,10 +88,10 @@ function App() {
   };
 
   const chartComponents: Record<string, React.ReactNode> = {
-    trendChart: <TrendChart data={data.trendData} isLoading={isLoading} />,
-    roasChart: <ChannelROASChart data={data.roasByChannel} isLoading={isLoading} />,
-    storeMap: <StoreMapChart data={data.storesHeatmap} isLoading={isLoading} />,
-    funnel: <FunnelChart data={data.funnelData} isLoading={isLoading} />,
+    trendChart: <TrendChart data={data.trendData} isLoading={isLoadingData} />,
+    roasChart: <ChannelROASChart data={data.roasByChannel} isLoading={isLoadingData} />,
+    storeMap: <StoreMapChart data={data.storesHeatmap} isLoading={isLoadingData} />,
+    funnel: <FunnelChart data={data.funnelData} isLoading={isLoadingData} />,
   };
 
   const renderView = () => {
@@ -103,7 +103,7 @@ function App() {
               <FilterPanel />
             </div>
             <main className="space-y-6">
-              <KpiGrid kpiData={data.kpis} isLoading={isLoading} />
+              <KpiGrid kpiData={data.kpis} isLoading={isLoadingData} />
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
