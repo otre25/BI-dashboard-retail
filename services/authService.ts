@@ -189,6 +189,24 @@ export class AuthService {
       avatarUrl: userData.avatar_url,
     };
 
+    // Handle case where company data might not be loaded
+    if (!userData.companies) {
+      console.warn('[AuthService] No company data found, creating default company');
+      const company: Company = {
+        id: userData.company_id || 'default',
+        name: 'Demo Company',
+        industry: 'retail',
+        createdAt: new Date(),
+        settings: {
+          currency: 'EUR',
+          timezone: 'Europe/Rome',
+          fiscalYearStart: '01-01',
+          defaultDateRange: '30d',
+        },
+      };
+      return { user, company };
+    }
+
     const company: Company = {
       id: userData.companies.id,
       name: userData.companies.name,

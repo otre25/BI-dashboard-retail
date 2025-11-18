@@ -38,30 +38,12 @@ import {
 
 export type View = 'dashboard' | 'advertising' | 'sales' | 'reports' | 'settings' | 'datasources';
 
-function App() {
+// Authenticated Dashboard Component
+function AuthenticatedDashboard() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [lastUpdate] = useState(new Date());
   const { isDark, toggleTheme } = useTheme();
   const { generateShareUrl } = useUrlState();
-  const { isAuthenticated, isLoading, login } = useAuth();
-
-  // Show loading while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Caricamento...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show login if not authenticated
-  if (!isAuthenticated) {
-    return <LoginForm onLogin={login} onSwitchToRegister={() => {}} />;
-  }
-
   const { dateRange, selectedStoreIds, selectedChannel, chartOrder, setChartOrder, expandedCharts } = useDashboardStore();
   const { data, isLoading: isLoadingData } = useKPIData(dateRange.from, dateRange.to, selectedStoreIds, selectedChannel);
 
@@ -165,6 +147,31 @@ function App() {
       </div>
     </div>
   );
+}
+
+// Main App Component with Auth
+function App() {
+  const { isAuthenticated, isLoading, login } = useAuth();
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Caricamento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
+  if (!isAuthenticated) {
+    return <LoginForm onLogin={login} onSwitchToRegister={() => {}} />;
+  }
+
+  // Show authenticated dashboard
+  return <AuthenticatedDashboard />;
 }
 
 export default App;
