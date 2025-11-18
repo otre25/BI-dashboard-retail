@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Animazioni per Toast e componenti UI */
 
 @keyframes slide-in-right {
