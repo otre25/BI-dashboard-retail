@@ -16,8 +16,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isLoading: true,
 
   login: async (credentials) => {
+    console.log('[AuthStore] Login attempt for:', credentials.email);
     try {
       const { user, company } = await authService.login(credentials);
+      console.log('[AuthStore] Login successful:', { user, company });
       set({
         user,
         company,
@@ -25,6 +27,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         isLoading: false,
       });
     } catch (error) {
+      console.error('[AuthStore] Login error:', error);
       set({ isLoading: false });
       throw error;
     }
@@ -46,9 +49,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   checkAuth: async () => {
+    console.log('[AuthStore] checkAuth called');
     try {
       set({ isLoading: true });
-      const result = await authService.getCurrentUser();
+
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Auth check timeout')), 10000)
+      );
+
+      const result = await Promise.race([
+        authService.getCurrentUser(),
+        timeoutPromise
+      ]) as { user: User; company: Company } | null;
+
+      console.log('[AuthStore] Auth check result:', result);
 
       if (result) {
         set({
@@ -66,7 +81,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         });
       }
     } catch (error) {
-      console.error('Check auth error:', error);
+      console.error('[AuthStore] Check auth error:', error);
       set({
         user: null,
         company: null,

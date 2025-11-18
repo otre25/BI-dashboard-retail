@@ -152,16 +152,31 @@ export class AuthService {
    * Get current user with company
    */
   async getCurrentUser(): Promise<{ user: User; company: Company } | null> {
+    console.log('[AuthService] Getting current user...');
     const session = await this.getCurrentSession();
-    if (!session) return null;
+    if (!session) {
+      console.log('[AuthService] No session found');
+      return null;
+    }
 
+    console.log('[AuthService] Session found, fetching user data for:', session.user.id);
     const { data: userData, error } = await supabase
       .from('users')
       .select('*, companies(*)')
       .eq('id', session.user.id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[AuthService] Error fetching user:', error);
+      throw error;
+    }
+
+    if (!userData) {
+      console.error('[AuthService] No user data found');
+      return null;
+    }
+
+    console.log('[AuthService] User data fetched successfully:', userData);
 
     const user: User = {
       id: userData.id,
