@@ -18,6 +18,8 @@ import { SortableChart } from './components/SortableChart';
 import { useUrlState } from './hooks/useUrlState';
 import { ApiSettingsPanel } from './components/settings/ApiSettingsPanel';
 import { DataSourcePanel } from './components/settings/DataSourcePanel';
+import { LoginForm } from './components/auth/LoginForm';
+import { useAuth } from './hooks/useAuth';
 import {
   DndContext,
   closestCenter,
@@ -41,6 +43,24 @@ function App() {
   const [lastUpdate] = useState(new Date());
   const { isDark, toggleTheme } = useTheme();
   const { generateShareUrl } = useUrlState();
+  const { isAuthenticated, isLoading, login } = useAuth();
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Caricamento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
+  if (!isAuthenticated) {
+    return <LoginForm onLogin={login} onSwitchToRegister={() => {}} />;
+  }
 
   const { dateRange, selectedStoreIds, selectedChannel, chartOrder, setChartOrder, expandedCharts } = useDashboardStore();
   const { data, isLoading } = useKPIData(dateRange.from, dateRange.to, selectedStoreIds, selectedChannel);
