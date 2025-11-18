@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { FileDown, Bell, RefreshCw, Sun, Moon, Clock, Share2 } from 'lucide-react';
+import { FileDown, Bell, RefreshCw, Sun, Moon, Clock, Share2, HelpCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { ExportModal } from './ExportModal';
 import { ShareModal } from './ShareModal';
+import { useTutorialStore } from '../store/useTutorialStore';
 
 interface QuickActionsProps {
   onToggleTheme: () => void;
@@ -15,6 +16,7 @@ export function QuickActions({ onToggleTheme, isDarkTheme, lastUpdate, shareUrl 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const { startTutorial } = useTutorialStore();
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -90,6 +92,21 @@ export function QuickActions({ onToggleTheme, isDarkTheme, lastUpdate, shareUrl 
         >
           <Share2 className="w-4 h-4" />
           <span>Condividi</span>
+        </button>
+
+        <button
+          onClick={startTutorial}
+          className={cn(
+            'flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-all duration-200',
+            'bg-blue-600/20 text-blue-400 border border-blue-600/30',
+            'hover:bg-blue-600/30 hover:border-blue-500',
+            'focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'min-h-[36px]'
+          )}
+          title="Riavvia tutorial"
+        >
+          <HelpCircle className="w-4 h-4" />
+          <span>Tutorial</span>
         </button>
       </div>
 

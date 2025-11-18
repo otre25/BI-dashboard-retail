@@ -20,6 +20,7 @@ import { ApiSettingsPanel } from './components/settings/ApiSettingsPanel';
 import { DataSourcePanel } from './components/settings/DataSourcePanel';
 import { LoginForm } from './components/auth/LoginForm';
 import { useAuth } from './hooks/useAuth';
+import { Tutorial } from './components/tutorial/Tutorial';
 import {
   DndContext,
   closestCenter,
@@ -81,23 +82,26 @@ function AuthenticatedDashboard() {
       case 'dashboard':
         return (
           <>
-            <div className="my-6">
+            <div className="my-6" data-tour="filters">
               <FilterPanel />
             </div>
             <main className="space-y-6">
-              <KpiGrid kpiData={data.kpis} isLoading={isLoadingData} />
+              <div data-tour="kpi-grid">
+                <KpiGrid kpiData={data.kpis} isLoading={isLoadingData} />
+              </div>
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
                 onDragEnd={handleChartDragEnd}
               >
                 <SortableContext items={chartOrder} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6" data-tour="charts">
                     {chartOrder.map((chartId) => (
                       <SortableChart
                         key={chartId}
                         id={chartId}
                         isExpanded={expandedCharts.has(chartId)}
+                        data-tour={chartId === 'trendChart' ? 'trend-chart' : undefined}
                       >
                         {chartComponents[chartId]}
                       </SortableChart>
@@ -128,12 +132,15 @@ function AuthenticatedDashboard() {
       "min-h-screen p-4 sm:p-6 lg:p-8 transition-colors duration-300",
       isDark ? "bg-gray-900 text-gray-200" : "bg-gray-50 text-gray-900"
     )}>
+      <Tutorial />
       <a href="#main-content" className="skip-link">
         Salta al contenuto principale
       </a>
       <div className="max-w-screen-2xl mx-auto">
-        <Header currentView={currentView} setCurrentView={setCurrentView} />
-        <div className="mt-4">
+        <div data-tour="header-tabs">
+          <Header currentView={currentView} setCurrentView={setCurrentView} />
+        </div>
+        <div className="mt-4" data-tour="quick-actions">
           <QuickActions
             onToggleTheme={toggleTheme}
             isDarkTheme={isDark}
