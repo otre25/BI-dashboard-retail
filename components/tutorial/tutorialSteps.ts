@@ -34,12 +34,12 @@ export const tutorialSteps: Step[] = [
   },
   {
     target: '[data-tour="quick-actions"]',
-    content: 'Qui trovi azioni rapide: cambia tema chiaro/scuro, esporta dati, condividi la dashboard e riavvia questo tutorial!',
+    content: 'Qui trovi azioni rapide: importa i tuoi dati da CSV/JSON, esporta report, condividi la dashboard, cambia tema e riavvia il tutorial!',
     placement: 'bottom',
   },
   {
     target: 'body',
-    content: 'Ottimo! Ora sei pronto per esplorare la dashboard. Buon lavoro! 🚀',
+    content: 'Ottimo! Ora sei pronto per esplorare la dashboard. Usa "Importa Dati" per caricare i tuoi file con rilevamento automatico dei campi. Buon lavoro! 🚀',
     placement: 'center',
   },
 ];

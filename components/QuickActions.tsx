@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
-import { FileDown, Bell, RefreshCw, Sun, Moon, Clock, Share2, HelpCircle } from 'lucide-react';
+import { FileDown, Bell, RefreshCw, Sun, Moon, Clock, Share2, HelpCircle, Upload } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { ExportModal } from './ExportModal';
 import { ShareModal } from './ShareModal';
+import { ImportWizard } from './ImportWizard';
 import { useTutorialStore } from '../store/useTutorialStore';
+import type { FieldMapping } from '../types/dataMapping.types';
 
 interface QuickActionsProps {
   onToggleTheme: () => void;
   isDarkTheme: boolean;
   lastUpdate: Date;
   shareUrl: string;
+  onDataImport?: (data: Record<string, any>[], mappings: FieldMapping[]) => void;
 }
 
-export function QuickActions({ onToggleTheme, isDarkTheme, lastUpdate, shareUrl }: QuickActionsProps) {
+export function QuickActions({ onToggleTheme, isDarkTheme, lastUpdate, shareUrl, onDataImport }: QuickActionsProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
   const { startTutorial } = useTutorialStore();
 
   const handleRefresh = () => {
@@ -33,6 +37,20 @@ export function QuickActions({ onToggleTheme, isDarkTheme, lastUpdate, shareUrl 
       {/* Left side - Quick actions */}
       <div className="flex items-center gap-2">
         <button
+          onClick={() => setIsImportWizardOpen(true)}
+          className={cn(
+            'flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-all duration-200',
+            'bg-green-600/20 text-green-400 border border-green-600/30',
+            'hover:bg-green-600/30 hover:border-green-500',
+            'focus:outline-none focus:ring-2 focus:ring-green-500',
+            'min-h-[36px]'
+          )}
+        >
+          <Upload className="w-4 h-4" />
+          <span>Importa Dati</span>
+        </button>
+
+        <button
           onClick={() => setIsExportModalOpen(true)}
           className={cn(
             'flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-all duration-200',
@@ -45,6 +63,16 @@ export function QuickActions({ onToggleTheme, isDarkTheme, lastUpdate, shareUrl 
           <FileDown className="w-4 h-4" />
           <span>Esporta Report</span>
         </button>
+
+        <ImportWizard
+          isOpen={isImportWizardOpen}
+          onClose={() => setIsImportWizardOpen(false)}
+          onImport={(data, mappings) => {
+            console.log('Imported data:', data, mappings);
+            onDataImport?.(data, mappings);
+            setIsImportWizardOpen(false);
+          }}
+        />
 
         <ExportModal
           isOpen={isExportModalOpen}
