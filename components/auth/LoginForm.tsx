@@ -34,7 +34,7 @@ export function LoginForm({ onLogin, onSwitchToRegister, onGuest }: LoginFormPro
         <div className="text-center">
           <LogIn className="mx-auto h-12 w-12 text-cyan-400" />
           <h2 className="mt-6 text-3xl font-bold text-white">
-            Accedi al tuo account
+            Executive BI Dashboard
           </h2>
           <p className="mt-2 text-sm text-gray-400">
             Oppure{' '}
@@ -47,7 +47,32 @@ export function LoginForm({ onLogin, onSwitchToRegister, onGuest }: LoginFormPro
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        {onGuest && (
+          <div className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 p-5 text-center">
+            <p className="text-sm text-cyan-100">
+              Vuoi solo dare un'occhiata? Esplora la dashboard con dati di esempio, senza account.
+            </p>
+            <button
+              type="button"
+              onClick={onGuest}
+              autoFocus
+              className="mt-4 w-full py-3 px-4 text-base font-semibold rounded-lg text-gray-900 bg-cyan-400 hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-300 transition-colors"
+            >
+              Entra come ospite
+            </button>
+          </div>
+        )}
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-700"></div>
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-2 bg-gray-900 text-gray-400">oppure accedi con il tuo account</span>
+          </div>
+        </div>
+
+        <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-900/50 border border-red-500 rounded-lg p-4 flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-red-400" />
@@ -124,28 +149,6 @@ export function LoginForm({ onLogin, onSwitchToRegister, onGuest }: LoginFormPro
           >
             {isLoading ? 'Accesso in corso...' : 'Accedi'}
           </button>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-900 text-gray-400">
-                  Versione Demo
-                </span>
-              </div>
-            </div>
-            {onGuest && (
-              <button
-                type="button"
-                onClick={onGuest}
-                className="mt-4 w-full py-3 px-4 text-sm font-medium rounded-lg text-cyan-300 border border-cyan-500/50 hover:bg-cyan-500/10 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
-              >
-                Entra come ospite (dati di esempio)
-              </button>
-            )}
-          </div>
         </form>
       </div>
     </div>
