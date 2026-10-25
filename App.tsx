@@ -196,7 +196,6 @@ function App() {
     return (
       <LoginForm
         onLogin={login}
-        onSwitchToRegister={() => {}}
         onGuest={() => useAuthStore.getState().setUser(DEMO_USER, DEMO_COMPANY)}
       />
     );

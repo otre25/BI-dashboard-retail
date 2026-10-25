@@ -4,11 +4,10 @@ import type { LoginCredentials } from '../../types/auth.types';
 
 interface LoginFormProps {
   onLogin: (credentials: LoginCredentials) => Promise<void>;
-  onSwitchToRegister: () => void;
   onGuest?: () => void;
 }
 
-export function LoginForm({ onLogin, onSwitchToRegister, onGuest }: LoginFormProps) {
+export function LoginForm({ onLogin, onGuest }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -36,15 +35,6 @@ export function LoginForm({ onLogin, onSwitchToRegister, onGuest }: LoginFormPro
           <h2 className="mt-6 text-3xl font-bold text-white">
             Executive BI Dashboard
           </h2>
-          <p className="mt-2 text-sm text-gray-400">
-            Oppure{' '}
-            <button
-              onClick={onSwitchToRegister}
-              className="font-medium text-cyan-400 hover:text-cyan-300"
-            >
-              crea un nuovo account
-            </button>
-          </p>
         </div>
 
         {onGuest && (
