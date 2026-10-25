@@ -20,6 +20,8 @@ import { ApiSettingsPanel } from './components/settings/ApiSettingsPanel';
 import { DataSourcePanel } from './components/settings/DataSourcePanel';
 import { LoginForm } from './components/auth/LoginForm';
 import { useAuth } from './hooks/useAuth';
+import { useAuthStore } from './store/useAuthStore';
+import { DEMO_COMPANY, DEMO_USER, isDemoUser } from './lib/demoUser';
 import { Tutorial } from './components/tutorial/Tutorial';
 import {
   DndContext,
@@ -39,11 +41,23 @@ import {
 
 export type View = 'dashboard' | 'advertising' | 'sales' | 'reports' | 'settings' | 'datasources';
 
+function GuestNotice() {
+  return (
+    <div className="my-6 rounded-lg border border-gray-600 p-6 text-center">
+      <p className="font-medium">Disponibile con un account.</p>
+      <p className="mt-1 text-sm text-gray-400">
+        Le integrazioni con piattaforme e fonti dati reali non sono attive nella demo.
+      </p>
+    </div>
+  );
+}
+
 // Authenticated Dashboard Component
 function AuthenticatedDashboard() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [lastUpdate] = useState(new Date());
   const { isDark, toggleTheme } = useTheme();
+  const isGuest = isDemoUser(useAuthStore((state) => state.user));
   const { generateShareUrl } = useUrlState();
   const { dateRange, selectedStoreIds, selectedChannel, chartOrder, setChartOrder, expandedCharts } = useDashboardStore();
   const { data, isLoading: isLoadingData } = useKPIData(dateRange.from, dateRange.to, selectedStoreIds, selectedChannel);
@@ -119,9 +133,9 @@ function AuthenticatedDashboard() {
       case 'reports':
         return <ReportsSection />;
       case 'settings':
-        return <ApiSettingsPanel />;
+        return isGuest ? <GuestNotice /> : <ApiSettingsPanel />;
       case 'datasources':
-        return <DataSourcePanel />;
+        return isGuest ? <GuestNotice /> : <DataSourcePanel />;
       default:
         return null;
     }
@@ -132,6 +146,11 @@ function AuthenticatedDashboard() {
       "min-h-screen p-4 sm:p-6 lg:p-8 transition-colors duration-300",
       isDark ? "bg-gray-900 text-gray-200" : "bg-gray-50 text-gray-900"
     )}>
+      {isGuest && (
+        <div role="status" className="mb-4 rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-200">
+          Modalità demo: dati di esempio, nessun account collegato.
+        </div>
+      )}
       <Tutorial />
       <a href="#main-content" className="skip-link">
         Salta al contenuto principale
@@ -174,7 +193,13 @@ function App() {
 
   // Show login if not authenticated
   if (!isAuthenticated) {
-    return <LoginForm onLogin={login} onSwitchToRegister={() => {}} />;
+    return (
+      <LoginForm
+        onLogin={login}
+        onSwitchToRegister={() => {}}
+        onGuest={() => useAuthStore.getState().setUser(DEMO_USER, DEMO_COMPANY)}
+      />
+    );
   }
 
   // Show authenticated dashboard

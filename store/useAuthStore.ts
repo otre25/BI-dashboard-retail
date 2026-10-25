@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { User, Company, AuthState, LoginCredentials } from '../types/auth.types';
 import { authService } from '../services/authService';
+import { isDemoUser } from '../lib/demoUser';
 
 interface AuthStore extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -9,7 +10,7 @@ interface AuthStore extends AuthState {
   setUser: (user: User | null, company: Company | null) => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   company: null,
   isAuthenticated: false,
@@ -35,7 +36,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   logout: async () => {
     try {
-      await authService.logout();
+      if (!isDemoUser(get().user)) await authService.logout();
       set({
         user: null,
         company: null,

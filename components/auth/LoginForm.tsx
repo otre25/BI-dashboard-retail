@@ -5,9 +5,10 @@ import type { LoginCredentials } from '../../types/auth.types';
 interface LoginFormProps {
   onLogin: (credentials: LoginCredentials) => Promise<void>;
   onSwitchToRegister: () => void;
+  onGuest?: () => void;
 }
 
-export function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProps) {
+export function LoginForm({ onLogin, onSwitchToRegister, onGuest }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -135,10 +136,15 @@ export function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProps) {
                 </span>
               </div>
             </div>
-            <div className="mt-3 text-sm text-center text-gray-400">
-              <p>Email: demo@example.com</p>
-              <p>Password: demo123</p>
-            </div>
+            {onGuest && (
+              <button
+                type="button"
+                onClick={onGuest}
+                className="mt-4 w-full py-3 px-4 text-sm font-medium rounded-lg text-cyan-300 border border-cyan-500/50 hover:bg-cyan-500/10 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
+              >
+                Entra come ospite (dati di esempio)
+              </button>
+            )}
           </div>
         </form>
       </div>
