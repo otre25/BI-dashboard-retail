@@ -97,12 +97,12 @@ Crea `.env` nella root del progetto:
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
-# OAuth Credentials
+# OAuth (solo ID pubblici)
 VITE_META_APP_ID=your-meta-app-id
-VITE_META_APP_SECRET=your-meta-secret
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
-VITE_GOOGLE_CLIENT_SECRET=your-google-secret
 ```
+
+> I client secret OAuth (Meta, Google) non vanno in variabili `VITE_*`: finiscono nel bundle del browser. Lo scambio OAuth va fatto lato server.
 
 ### Step 3: Crea database schema
 

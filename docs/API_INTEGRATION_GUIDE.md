@@ -131,8 +131,9 @@ Nel file `.env`:
 VITE_GOOGLE_ACCESS_TOKEN=ya29.xxxxxxxxxxxxx
 VITE_GOOGLE_CUSTOMER_ID=1234567890
 VITE_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
-VITE_GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxx
 ```
+
+> Il client secret OAuth non va in una variabile `VITE_*` (finirebbe nel bundle del browser). Il rinnovo del token va fatto lato server.
 
 ### Codice di Esempio
 
@@ -144,7 +145,6 @@ advertisingDataService.configureChannel({
     accessToken: import.meta.env.VITE_GOOGLE_ACCESS_TOKEN,
     accountId: import.meta.env.VITE_GOOGLE_CUSTOMER_ID,
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-    clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
   },
 });
 ```
