@@ -70,6 +70,15 @@ const APPOINTMENT_RATE = 0.7;
 const SHOW_RATE = 0.85;
 const BASE_CLOSE_RATE = 0.32;
 
+export interface AppuntamentoDemo {
+  id: string;
+  lead_id: string;
+  data: Date;
+  negozio_id: number;
+  canale: CanaleEnum;
+  esito: 'presentato' | 'no-show' | 'vendita' | 'perso';
+}
+
 const pickWeighted = (rng: () => number, weights: number[]): number => {
   const total = weights.reduce((a, b) => a + b, 0);
   let r = rng() * total;
@@ -86,6 +95,7 @@ export const generateDemoData = (today: Date = new Date(), seed: number = DEMO_S
   const spesaData: SpesaAdvertising[] = [];
   const leadData: Lead[] = [];
   const venditaData: Vendita[] = [];
+  const appuntamentiData: AppuntamentoDemo[] = [];
   const storeWeights = negozi.map(n => STORE_PROFILES[n.id].weight);
 
   for (let i = 0; i < HISTORY_DAYS; i++) {
@@ -123,15 +133,33 @@ export const generateDemoData = (today: Date = new Date(), seed: number = DEMO_S
           lead.stato = rng() < 0.4 ? 'contattato' : 'perso';
         } else {
           lead.stato = 'appuntamento_fissato';
-          if (rng() < SHOW_RATE) {
+          const dataAppuntamento = addDays(date, 1 + Math.floor(rng() * 4));
+          const registraAppuntamento = (esito: AppuntamentoDemo['esito']) => {
+            appuntamentiData.push({
+              id: `app-${lead.id}`,
+              lead_id: lead.id,
+              data: dataAppuntamento,
+              negozio_id: store.id,
+              canale,
+              esito,
+            });
+          };
+          const inFuturo = isAfter(dataAppuntamento, end);
+
+          if (rng() >= SHOW_RATE) {
+            if (!inFuturo) registraAppuntamento('no-show'); // il lead resta 'appuntamento_fissato'
+          } else if (!inFuturo) {
             lead.stato = 'appuntamento_presentato';
             const closeRate = Math.min(0.9, BASE_CLOSE_RATE * profile.closeFactor * profileStore.quality);
             if (rng() < closeRate) {
               const giorni = Math.floor(rng() * 25) + 5;
               const dataVendita = addDays(date, giorni);
               // Se la vendita cade nel futuro il lead è ancora in trattativa, non "venduto".
-              if (!isAfter(dataVendita, end)) {
+              if (isAfter(dataVendita, end)) {
+                registraAppuntamento('presentato');
+              } else {
                 lead.stato = 'venduto';
+                registraAppuntamento('vendita');
                 venditaData.push({
                   id: `vendita-${canale}-${i}-${j}`,
                   data_vendita: dataVendita,
@@ -145,6 +173,7 @@ export const generateDemoData = (today: Date = new Date(), seed: number = DEMO_S
               }
             } else {
               lead.stato = 'perso';
+              registraAppuntamento('perso');
             }
           }
         }
@@ -153,7 +182,7 @@ export const generateDemoData = (today: Date = new Date(), seed: number = DEMO_S
     });
   }
 
-  return { spesaData, leadData, venditaData };
+  return { spesaData, leadData, venditaData, appuntamentiData };
 };
 
-export const { spesaData, leadData, venditaData } = generateDemoData();
+export const { spesaData, leadData, venditaData, appuntamentiData } = generateDemoData();

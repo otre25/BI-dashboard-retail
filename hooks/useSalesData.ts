@@ -151,7 +151,7 @@ export const useSalesData = (startDate: Date, endDate: Date) => {
         };
         
         // LEAD SOURCES
-        const leadSources = ['Meta', 'Google', 'Walk-in', 'Referral'];
+        const leadSources = ['Meta', 'Google', 'Programmatic'];
         const leadSourcePerformance: LeadSourceTableRow[] = leadSources.map(source => {
             const sourceSales = filteredSales.filter(s => s.fonte_lead === source);
             const sourceAppointments = appointments.filter(a => a.fonte === source && isWithinInterval(a.data, {start: startDate, end: endDate}));

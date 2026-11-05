@@ -1,4 +1,4 @@
-import { subDays, eachDayOfInterval } from 'date-fns';
+import { appuntamentiData, negozi, venditaData } from './mockData';
 
 // Types
 export interface Manager { id: number; nome: string; }
@@ -26,20 +26,15 @@ export const managers: Manager[] = [
     { id: 3, nome: "Anna Verdi" },
 ];
 
-export const stores: Store[] = [
-  { id: 1, nome: "Cucine Milano Centro", citta: "Milano", metri_quadri: 250, manager_id: 1 },
-  { id: 2, nome: "Cucine Roma Termini", citta: "Roma", metri_quadri: 300, manager_id: 2 },
-  { id: 3, nome: "Cucine Napoli Vomero", citta: "Napoli", metri_quadri: 200, manager_id: 3 },
-  { id: 4, nome: "Cucine Torino Re Umberto", citta: "Torino", metri_quadri: 220, manager_id: 1 },
-  { id: 5, nome: "Cucine Firenze SMN", citta: "Firenze", metri_quadri: 180, manager_id: 2 },
-  { id: 6, nome: "Cucine Bologna Fiera", citta: "Bologna", metri_quadri: 210, manager_id: 1 },
-  { id: 7, nome: "Cucine Palermo Politeama", citta: "Palermo", metri_quadri: 190, manager_id: 3 },
-  { id: 8, nome: "Cucine Genova Brignole", citta: "Genova", metri_quadri: 170, manager_id: 1 },
-  { id: 9, nome: "Cucine Bari Murattiano", citta: "Bari", metri_quadri: 230, manager_id: 3 },
-  { id: 10, nome: "Cucine Catania Etnea", citta: "Catania", metri_quadri: 200, manager_id: 3 },
-  { id: 11, nome: "Cucine Verona Arena", citta: "Verona", metri_quadri: 160, manager_id: 2 },
-  { id: 12, nome: "Cucine Venezia Mestre", citta: "Venezia", metri_quadri: 150, manager_id: 2 },
-];
+// Anagrafica coerente con il dataset centrale (lib/mockData): stessi negozi, stesse vendite.
+const MANAGER_BY_STORE: Record<number, number> = {
+  1: 1, 2: 2, 3: 3, 4: 1, 5: 2, 6: 1, 7: 3, 8: 1, 9: 3, 10: 3, 11: 2, 12: 2, 13: 2, 14: 1, 15: 1,
+};
+
+export const stores: Store[] = negozi.map(n => ({ ...n, manager_id: MANAGER_BY_STORE[n.id] }));
+
+// Ogni negozio ha almeno un venditore; i primi dieci sono nominativi, gli altri generici.
+const EXTRA_REP_STORES = [9, 10, 11, 12, 13, 14, 15, 3, 2, 1];
 
 export const salesReps: SalesRep[] = [
     { id: 1, nome: "Paolo Costa", negozio_id: 1 },
@@ -52,7 +47,7 @@ export const salesReps: SalesRep[] = [
     { id: 8, nome: "Elena Greco", negozio_id: 6 },
     { id: 9, nome: "Giovanni Conti", negozio_id: 7 },
     { id: 10, nome: "Valentina Moretti", negozio_id: 8 },
-    ...Array.from({length: 10}, (_, i) => ({id: 11+i, nome: `Venditore ${11+i}`, negozio_id: stores[i % stores.length].id })),
+    ...EXTRA_REP_STORES.map((negozio_id, i) => ({ id: 11 + i, nome: `Venditore ${11 + i}`, negozio_id })),
 ];
 
 export const products: Product[] = [
@@ -63,53 +58,46 @@ export const products: Product[] = [
     { id: 5, modello: "Modello E", categoria: 'premium', prezzo_base: 25000, margine_medio: 0.40 },
 ];
 
-// Generate Mock Data
-const today = new Date();
-const dateRange = eachDayOfInterval({ start: subDays(today, 365), end: today });
-const leadSources = ['Meta', 'Google', 'Walk-in', 'Referral'];
+// Assegna in modo stabile (stessa chiave = stesso venditore) senza altro stato casuale.
+const hashString = (value: string): number => {
+  let h = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    h ^= value.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+};
 
-export const appointments: Appointment[] = [];
-export const sales: Sale[] = [];
+const repFor = (storeId: number, key: string): SalesRep => {
+  const reps = salesReps.filter(r => r.negozio_id === storeId);
+  return reps[hashString(key) % reps.length];
+};
 
-let appointmentId = 1;
-let saleId = 1;
+const channelLabel = (canale: string): string => canale.charAt(0).toUpperCase() + canale.slice(1);
 
-dateRange.forEach(date => {
-    stores.forEach(store => {
-        const repsInStore = salesReps.filter(r => r.negozio_id === store.id);
-        if (repsInStore.length === 0) return;
-        
-        const dailyAppointments = Math.floor(Math.random() * 5) + repsInStore.length;
-        for (let i = 0; i < dailyAppointments; i++) {
-            const rep = repsInStore[Math.floor(Math.random() * repsInStore.length)];
-            const source = leadSources[Math.floor(Math.random() * leadSources.length)];
-            
-            let esito: Appointment['esito'] = 'presentato';
-            if (Math.random() < 0.15) esito = 'no-show';
-            else if (Math.random() < 0.30) esito = 'perso';
-            else esito = 'vendita';
+export const appointments: Appointment[] = appuntamentiData.map((a, index) => ({
+    id: index + 1,
+    data: a.data,
+    negozio_id: a.negozio_id,
+    venditore_id: repFor(a.negozio_id, a.lead_id).id,
+    fonte: channelLabel(a.canale),
+    esito: a.esito,
+}));
 
-            appointments.push({
-                id: appointmentId++,
-                data: date,
-                negozio_id: store.id,
-                venditore_id: rep.id,
-                fonte: source,
-                esito
-            });
-            
-            if (esito === 'vendita') {
-                const product = products[Math.floor(Math.random() * products.length)];
-                sales.push({
-                    id: saleId++,
-                    data: date,
-                    negozio_id: store.id,
-                    venditore_id: rep.id,
-                    prodotto_id: product.id,
-                    importo: product.prezzo_base * (0.9 + Math.random() * 0.2), // variance
-                    fonte_lead: source,
-                });
-            }
-        }
-    });
+const leadChannel = new Map(appuntamentiData.map(a => [a.lead_id, a.canale]));
+const productByModel = new Map(products.map(p => [p.modello, p]));
+
+export const sales: Sale[] = venditaData.flatMap((v, index) => {
+    const canale = v.lead_id ? leadChannel.get(v.lead_id) : undefined;
+    const product = productByModel.get(v.modello_cucina);
+    if (!canale || !product) return [];
+    return [{
+        id: index + 1,
+        data: v.data_vendita,
+        negozio_id: v.negozio_id,
+        venditore_id: repFor(v.negozio_id, v.lead_id ?? v.id).id,
+        prodotto_id: product.id,
+        importo: v.importo_totale,
+        fonte_lead: channelLabel(canale),
+    }];
 });

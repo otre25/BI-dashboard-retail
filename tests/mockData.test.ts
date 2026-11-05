@@ -58,4 +58,14 @@ describe('demo data', () => {
     });
     expect(Math.max(...rates) - Math.min(...rates)).toBeGreaterThan(0.1);
   });
+
+  it('keeps appointments consistent with leads and sales', () => {
+    const saleLeadIds = new Set(data.venditaData.map(v => v.lead_id));
+    const sales = data.appuntamentiData.filter(a => a.esito === 'vendita');
+    expect(sales.length).toBe(data.venditaData.length);
+    expect(sales.every(a => saleLeadIds.has(a.lead_id))).toBe(true);
+    expect(data.appuntamentiData.every(a => a.data <= today)).toBe(true);
+    const leadStore = new Map(data.leadData.map(l => [l.id, l.negozio_assegnato_id]));
+    expect(data.appuntamentiData.every(a => leadStore.get(a.lead_id) === a.negozio_id)).toBe(true);
+  });
 });
