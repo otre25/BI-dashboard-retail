@@ -24,11 +24,11 @@ export const negozi: Negozio[] = [
 // calibrati su un retailer di cucine: spesa ~€0.9M/anno, ~2.400 lead/anno,
 // stagionalità (picchi in primavera e autunno, calo ad agosto), canali e negozi con rese diverse.
 
-const DEMO_SEED = 20260101;
+export const DEMO_SEED = 20260101;
 const HISTORY_DAYS = 395; // 365 visibili + 30 di coda perché le vendite arrivano 5-30 giorni dopo il lead
 
 // PRNG mulberry32: piccolo, veloce, riproducibile.
-const createRng = (seed: number) => {
+export const createRng = (seed: number) => {
   let a = seed;
   return () => {
     a |= 0; a = (a + 0x6d2b79f5) | 0;

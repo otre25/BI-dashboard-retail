@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { isWithinInterval, format, subDays } from 'date-fns';
+import { isWithinInterval, format, startOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { mockCampaigns, mockKeywords, mockDemographics, mockPublishers } from '../lib/advertisingMockData';
 import { CanaleEnum } from '../types';
@@ -35,7 +35,7 @@ export interface ProgrammaticData { kpis: any; publishers: ProgrammaticPublisher
 
 const useFilteredAdvData = (startDate: Date, endDate: Date) => {
     return useMemo(() => {
-        const interval = { start: startDate, end: endDate };
+        const interval = { start: startOfDay(startDate), end: endDate };
         const filterByDate = (item: { date: Date }) => isWithinInterval(item.date, interval);
 
         return {
@@ -51,7 +51,7 @@ export const useAdvertisingData = (startDate: Date, endDate: Date) => {
     
     // Helper to aggregate insights
     const aggregateInsights = (items: any[]) => {
-        const interval = { start: startDate, end: endDate };
+        const interval = { start: startOfDay(startDate), end: endDate };
         return items.reduce((acc, item) => {
             const relevantInsights = item.insights.filter((i: any) => isWithinInterval(i.date, interval));
             relevantInsights.forEach((insight: any) => {
