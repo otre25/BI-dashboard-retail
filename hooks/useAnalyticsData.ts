@@ -3,7 +3,8 @@ import { useMemo } from 'react';
 import { isWithinInterval, format, differenceInDays, subDays, startOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { negozi, spesaData, leadData, venditaData } from '../lib/mockData';
-import { CanaleEnum, type Vendita, type SpesaAdvertising, type Lead, type Negozio, type MapStoreData } from '../types';
+import { CanaleEnum, type Negozio, type MapStoreData } from '../types';
+import { calculateMetrics } from '../lib/kpi';
 
 const useFilteredData = (
   startDate: Date,
@@ -52,31 +53,6 @@ export const useKPIData = (
     const previousData = useFilteredData(prevStartDate, prevEndDate, storeIds, channel);
 
     const kpis = useMemo(() => {
-        const calculateMetrics = (data: { vendite: Vendita[], leads: Lead[], spese: SpesaAdvertising[], activeNegozi: Negozio[] }) => {
-            const spesaAdvTotale = data.spese.reduce((sum, s) => sum + s.spesa, 0);
-            const venditeDaLead = data.vendite.filter(v => v.lead_id);
-            const fatturatoDaLead = venditeDaLead.reduce((sum, v) => sum + v.importo_totale, 0);
-            const venditeTotali = data.vendite.reduce((sum, v) => sum + v.importo_totale, 0);
-            const profittoTotale = data.vendite.reduce((sum, v) => sum + (v.importo_totale * v.margine_percentuale), 0);
-            const leadsVendutiCount = data.leads.filter(l => l.stato === 'venduto').length;
-            const leadsTotali = data.leads.length;
-            const metriQuadriTotali = data.activeNegozi.reduce((sum, n) => sum + n.metri_quadri, 0);
-
-            return {
-                spesaAdvTotale,
-                fatturatoDaLead,
-                venditeTotali,
-                profittoTotale,
-                leadsVendutiCount,
-                leadsTotali,
-                roas: spesaAdvTotale > 0 ? fatturatoDaLead / spesaAdvTotale : 0,
-                mer: spesaAdvTotale > 0 ? venditeTotali / spesaAdvTotale : 0,
-                cac: leadsVendutiCount > 0 ? spesaAdvTotale / leadsVendutiCount : 0,
-                conversionRate: leadsTotali > 0 ? leadsVendutiCount / leadsTotali : 0,
-                profitabilitaPerMq: metriQuadriTotali > 0 ? profittoTotale / metriQuadriTotali : 0,
-            };
-        };
-
         const currentMetrics = calculateMetrics(currentData);
         const previousMetrics = calculateMetrics(previousData);
         
