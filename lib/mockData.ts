@@ -1,4 +1,4 @@
-import { addDays, subDays } from 'date-fns';
+import { addDays, getMonth, getDay, isAfter, startOfDay, subDays } from 'date-fns';
 import type { Negozio, SpesaAdvertising, Lead, Vendita } from '../types';
 import { CanaleEnum } from '../types';
 
@@ -20,73 +20,140 @@ export const negozi: Negozio[] = [
   { id: 15, nome: "Cucine Brescia Castello", citta: "Brescia", metri_quadri: 175 },
 ];
 
-const generateRandomData = () => {
-  const today = new Date();
+// Dati dimostrativi deterministici (stesso seed = stessi numeri a ogni caricamento),
+// calibrati su un retailer di cucine: spesa ~€0.9M/anno, ~2.400 lead/anno,
+// stagionalità (picchi in primavera e autunno, calo ad agosto), canali e negozi con rese diverse.
+
+const DEMO_SEED = 20260101;
+const HISTORY_DAYS = 395; // 365 visibili + 30 di coda perché le vendite arrivano 5-30 giorni dopo il lead
+
+// PRNG mulberry32: piccolo, veloce, riproducibile.
+const createRng = (seed: number) => {
+  let a = seed;
+  return () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+// Moltiplicatore mensile (gennaio = indice 0).
+const SEASONALITY = [0.85, 0.95, 1.15, 1.2, 1.15, 0.95, 0.8, 0.55, 1.15, 1.3, 1.25, 0.9];
+
+interface ChannelProfile {
+  dailySpend: number; // € medi al giorno
+  costPerLead: number; // € per lead
+  closeFactor: number; // moltiplicatore del tasso di chiusura (qualità del lead)
+}
+
+const CHANNELS: Record<CanaleEnum, ChannelProfile> = {
+  [CanaleEnum.Meta]: { dailySpend: 760, costPerLead: 400, closeFactor: 0.85 },
+  [CanaleEnum.Google]: { dailySpend: 1250, costPerLead: 420, closeFactor: 1.2 },
+  [CanaleEnum.Programmatic]: { dailySpend: 450, costPerLead: 600, closeFactor: 0.5 },
+};
+
+// Resa per negozio: peso nei lead, qualità della chiusura e scontrino medio.
+const STORE_PROFILES: Record<number, { weight: number; quality: number; ticket: number }> = {
+  1: { weight: 1.4, quality: 1.25, ticket: 1.25 }, 2: { weight: 1.5, quality: 1.1, ticket: 1.2 },
+  3: { weight: 0.9, quality: 0.8, ticket: 0.85 }, 4: { weight: 1.0, quality: 1.0, ticket: 1.0 },
+  5: { weight: 0.8, quality: 1.05, ticket: 1.1 }, 6: { weight: 1.0, quality: 1.15, ticket: 1.0 },
+  7: { weight: 0.8, quality: 0.65, ticket: 0.8 }, 8: { weight: 0.7, quality: 0.9, ticket: 0.95 },
+  9: { weight: 0.9, quality: 0.85, ticket: 0.85 }, 10: { weight: 0.8, quality: 0.7, ticket: 0.8 },
+  11: { weight: 0.8, quality: 1.2, ticket: 1.05 }, 12: { weight: 0.7, quality: 1.0, ticket: 1.0 },
+  13: { weight: 0.8, quality: 1.1, ticket: 1.0 }, 14: { weight: 0.6, quality: 0.95, ticket: 0.95 },
+  15: { weight: 0.7, quality: 1.0, ticket: 1.0 },
+};
+
+const BASE_TICKET = 13000;
+const APPOINTMENT_RATE = 0.7;
+const SHOW_RATE = 0.85;
+const BASE_CLOSE_RATE = 0.32;
+
+const pickWeighted = (rng: () => number, weights: number[]): number => {
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = rng() * total;
+  for (let i = 0; i < weights.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return i;
+  }
+  return weights.length - 1;
+};
+
+export const generateDemoData = (today: Date = new Date(), seed: number = DEMO_SEED) => {
+  const rng = createRng(seed);
+  const end = startOfDay(today);
   const spesaData: SpesaAdvertising[] = [];
   const leadData: Lead[] = [];
   const venditaData: Vendita[] = [];
+  const storeWeights = negozi.map(n => STORE_PROFILES[n.id].weight);
 
-  for (let i = 0; i < 365; i++) { // Generate more data for yearly view
-    const date = subDays(today, i);
-    
-    // Spesa
-    const metaSpesa = Math.random() * 500 + 100;
-    spesaData.push({
-      id: `meta-${i}`, data: date, canale: CanaleEnum.Meta, spesa: metaSpesa,
-      impression: Math.floor(metaSpesa * (100 + Math.random() * 20)), click: Math.floor(metaSpesa * (1.5 + Math.random()))
-    });
-    const googleSpesa = Math.random() * 800 + 200;
-    spesaData.push({
-      id: `google-${i}`, data: date, canale: CanaleEnum.Google, spesa: googleSpesa,
-      impression: Math.floor(googleSpesa * (80 + Math.random() * 15)), click: Math.floor(googleSpesa * (2.5 + Math.random()))
-    });
-    const programmaticSpesa = Math.random() * 300 + 50;
-    spesaData.push({
-      id: `prog-${i}`, data: date, canale: CanaleEnum.Programmatic, spesa: programmaticSpesa,
-      impression: Math.floor(programmaticSpesa * (200 + Math.random() * 50)), click: Math.floor(programmaticSpesa * (0.8 + Math.random() * 0.5))
-    });
+  for (let i = 0; i < HISTORY_DAYS; i++) {
+    const date = subDays(end, i);
+    const weekend = [0, 6].includes(getDay(date)) ? 0.8 : 1;
+    const season = SEASONALITY[getMonth(date)] * weekend;
 
-    // Leads & Vendite Funnel
-    const dailyLeads = Math.floor((metaSpesa + googleSpesa) / 45) + Math.floor(Math.random() * 5);
-    for (let j = 0; j < dailyLeads; j++) {
-      const leadId = `lead-${i}-${j}`;
-      const canale = Math.random() > 0.4 ? CanaleEnum.Google : CanaleEnum.Meta;
-      const lead: Lead = {
-        id: leadId,
-        data_generazione: date,
-        canale_provenienza: canale,
-        negozio_assegnato_id: negozi[Math.floor(Math.random() * negozi.length)].id,
-        stato: 'nuovo'
-      };
+    (Object.keys(CHANNELS) as CanaleEnum[]).forEach(canale => {
+      const profile = CHANNELS[canale];
+      const spesa = profile.dailySpend * season * (0.85 + rng() * 0.3);
+      spesaData.push({
+        id: `${canale}-${i}`,
+        data: date,
+        canale,
+        spesa,
+        impression: Math.floor(spesa * (canale === CanaleEnum.Programmatic ? 240 : canale === CanaleEnum.Meta ? 110 : 85)),
+        click: Math.floor(spesa * (canale === CanaleEnum.Google ? 2.8 : canale === CanaleEnum.Meta ? 1.8 : 1)),
+      });
 
-      if (Math.random() < 0.70) { // 70% to appuntamento_fissato
-        lead.stato = 'appuntamento_fissato';
-        if (Math.random() < 0.85) { // 85% of those show up
+      const expectedLeads = (spesa / profile.costPerLead) * (0.8 + rng() * 0.4);
+      const dailyLeads = Math.floor(expectedLeads) + (rng() < expectedLeads % 1 ? 1 : 0);
+
+      for (let j = 0; j < dailyLeads; j++) {
+        const store = negozi[pickWeighted(rng, storeWeights)];
+        const profileStore = STORE_PROFILES[store.id];
+        const lead: Lead = {
+          id: `lead-${canale}-${i}-${j}`,
+          data_generazione: date,
+          canale_provenienza: canale,
+          negozio_assegnato_id: store.id,
+          stato: 'nuovo',
+        };
+
+        if (rng() >= APPOINTMENT_RATE) {
+          lead.stato = rng() < 0.4 ? 'contattato' : 'perso';
+        } else {
+          lead.stato = 'appuntamento_fissato';
+          if (rng() < SHOW_RATE) {
             lead.stato = 'appuntamento_presentato';
-            if (Math.random() < 0.35) { // 35% of presented convert to sale
+            const closeRate = Math.min(0.9, BASE_CLOSE_RATE * profile.closeFactor * profileStore.quality);
+            if (rng() < closeRate) {
+              const giorni = Math.floor(rng() * 25) + 5;
+              const dataVendita = addDays(date, giorni);
+              // Se la vendita cade nel futuro il lead è ancora in trattativa, non "venduto".
+              if (!isAfter(dataVendita, end)) {
                 lead.stato = 'venduto';
-                const giorni_dalla_lead = Math.floor(Math.random() * 25) + 5;
                 venditaData.push({
-                  id: `vendita-${i}-${j}`,
-                  data_vendita: addDays(date, giorni_dalla_lead),
-                  negozio_id: lead.negozio_assegnato_id,
+                  id: `vendita-${canale}-${i}-${j}`,
+                  data_vendita: dataVendita,
+                  negozio_id: store.id,
                   lead_id: lead.id,
-                  importo_totale: Math.random() * 18000 + 6000,
-                  modello_cucina: "Modello " + String.fromCharCode(65 + Math.floor(Math.random()*5)),
-                  giorni_dalla_lead: giorni_dalla_lead,
-                  margine_percentuale: Math.random() * 0.15 + 0.20 // 20-35% margin
+                  importo_totale: BASE_TICKET * profileStore.ticket * (0.6 + rng() * 0.8),
+                  modello_cucina: 'Modello ' + String.fromCharCode(65 + Math.floor(rng() * 5)),
+                  giorni_dalla_lead: giorni,
+                  margine_percentuale: 0.2 + rng() * 0.15,
                 });
+              }
             } else {
-                lead.stato = 'perso';
+              lead.stato = 'perso';
             }
+          }
         }
-      } else {
-        lead.stato = Math.random() < 0.4 ? 'contattato' : 'perso';
+        leadData.push(lead);
       }
-      leadData.push(lead);
-    }
+    });
   }
-  return { spesaData, leadData, venditaData };
-}
 
-export const { spesaData, leadData, venditaData } = generateRandomData();
+  return { spesaData, leadData, venditaData };
+};
+
+export const { spesaData, leadData, venditaData } = generateDemoData();
