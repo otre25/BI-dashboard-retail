@@ -19,6 +19,7 @@ import { useUrlState } from './hooks/useUrlState';
 import { ApiSettingsPanel } from './components/settings/ApiSettingsPanel';
 import { DataSourcePanel } from './components/settings/DataSourcePanel';
 import { LoginForm } from './components/auth/LoginForm';
+import { StoreCacTable } from './components/StoreCacTable';
 import { useAuth } from './hooks/useAuth';
 import { Tutorial } from './components/tutorial/Tutorial';
 import {
@@ -109,6 +110,7 @@ function AuthenticatedDashboard() {
                   </div>
                 </SortableContext>
               </DndContext>
+              <StoreCacTable data={data.storeCac} isLoading={isLoadingData} />
             </main>
           </>
         );

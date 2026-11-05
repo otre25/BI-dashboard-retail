@@ -5,6 +5,7 @@ import { it } from 'date-fns/locale';
 import { negozi, spesaData, leadData, venditaData } from '../lib/mockData';
 import { CanaleEnum, type Negozio, type MapStoreData } from '../types';
 import { calculateMetrics } from '../lib/kpi';
+import { calculateStoreCac } from '../lib/storeCac';
 
 const useFilteredData = (
   startDate: Date,
@@ -177,8 +178,10 @@ export const useKPIData = (
         })).sort((a,b) => b.profitabilitaPerMq - a.profitabilitaPerMq);
     }, [currentData]);
 
+    const storeCac = useMemo(() => calculateStoreCac(currentData), [currentData]);
+
     return { 
-        data: { kpis, trendData, roasByChannel, funnelData, storesHeatmap },
+        data: { kpis, trendData, roasByChannel, funnelData, storesHeatmap, storeCac },
         isLoading: false // Placeholder for async data fetching
     };
 };
