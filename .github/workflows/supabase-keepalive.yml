@@ -1,0 +1,24 @@
+name: Supabase keep-alive
+
+# Il piano gratuito mette in pausa il progetto dopo 7 giorni senza attività.
+# Una query reale sul database, due volte a settimana, lo tiene attivo.
+on:
+  schedule:
+    - cron: '0 9 * * 1,4' # lunedì e giovedì, 09:00 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query companies
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          curl --fail --silent --show-error --max-time 20 \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/companies?select=id&limit=1"
