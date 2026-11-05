@@ -158,7 +158,7 @@ function AuthenticatedDashboard() {
 
 // Main App Component with Auth
 function App() {
-  const { isAuthenticated, isLoading, login } = useAuth();
+  const { isAuthenticated, isGuest, isLoading, login, loginAsGuest, logout } = useAuth();
 
   // Show loading while checking auth
   if (isLoading) {
@@ -174,11 +174,23 @@ function App() {
 
   // Show login if not authenticated
   if (!isAuthenticated) {
-    return <LoginForm onLogin={login} onSwitchToRegister={() => {}} />;
+    return <LoginForm onLogin={login} onSwitchToRegister={() => {}} onGuest={loginAsGuest} />;
   }
 
   // Show authenticated dashboard
-  return <AuthenticatedDashboard />;
+  return (
+    <>
+      {isGuest && (
+        <div role="status" className="bg-cyan-900/60 text-cyan-100 text-sm px-4 py-2 flex items-center justify-between">
+          <span>Modalità ospite: dati dimostrativi, nessun dato viene salvato.</span>
+          <button onClick={() => void logout()} className="underline hover:text-white">
+            Esci
+          </button>
+        </div>
+      )}
+      <AuthenticatedDashboard />
+    </>
+  );
 }
 
 export default App;

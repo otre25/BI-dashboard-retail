@@ -5,9 +5,10 @@ import type { LoginCredentials } from '../../types/auth.types';
 interface LoginFormProps {
   onLogin: (credentials: LoginCredentials) => Promise<void>;
   onSwitchToRegister: () => void;
+  onGuest: () => void;
 }
 
-export function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProps) {
+export function LoginForm({ onLogin, onSwitchToRegister, onGuest }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -123,6 +124,17 @@ export function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProps) {
           >
             {isLoading ? 'Accesso in corso...' : 'Accedi'}
           </button>
+
+          <button
+            type="button"
+            onClick={onGuest}
+            className="w-full flex justify-center py-3 px-4 border border-cyan-600 text-sm font-medium rounded-lg text-cyan-300 hover:bg-cyan-600/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-colors"
+          >
+            Entra come ospite
+          </button>
+          <p className="text-xs text-center text-gray-500">
+            Esplora la dashboard con dati dimostrativi, senza registrarti.
+          </p>
 
           <div className="mt-6">
             <div className="relative">

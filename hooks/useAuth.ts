@@ -5,7 +5,7 @@ import { rolePermissions } from '../types/auth.types';
 import type { Permissions } from '../types/auth.types';
 
 export function useAuth() {
-  const { user, company, isAuthenticated, isLoading, checkAuth, login, logout } = useAuthStore();
+  const { user, company, isAuthenticated, isGuest, isLoading, checkAuth, login, loginAsGuest, logout } = useAuthStore();
 
   // Subscribe to auth changes only (no initial check for faster load)
   useEffect(() => {
@@ -29,9 +29,11 @@ export function useAuth() {
     user,
     company,
     isAuthenticated,
+    isGuest,
     isLoading,
     permissions,
     login,
+    loginAsGuest,
     logout,
     checkAuth,
   };

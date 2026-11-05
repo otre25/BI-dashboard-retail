@@ -3,6 +3,8 @@ import type { User, Company, AuthState, LoginCredentials } from '../types/auth.t
 import { authService } from '../services/authService';
 
 interface AuthStore extends AuthState {
+  isGuest: boolean;
+  loginAsGuest: () => void;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -14,6 +16,36 @@ export const useAuthStore = create<AuthStore>((set) => ({
   company: null,
   isAuthenticated: false,
   isLoading: false, // Start with false for faster initial render
+  isGuest: false,
+
+  // Sessione ospite: solo in memoria, nessuna chiamata a Supabase, sola lettura.
+  loginAsGuest: () => {
+    set({
+      user: {
+        id: 'guest',
+        email: 'ospite@demo.local',
+        name: 'Ospite',
+        role: 'viewer',
+        companyId: 'guest-company',
+        createdAt: new Date(),
+      },
+      company: {
+        id: 'guest-company',
+        name: 'Cucine Retail (demo)',
+        industry: 'retail',
+        createdAt: new Date(),
+        settings: {
+          currency: 'EUR',
+          timezone: 'Europe/Rome',
+          fiscalYearStart: '01-01',
+          defaultDateRange: 30,
+        },
+      },
+      isAuthenticated: true,
+      isGuest: true,
+      isLoading: false,
+    });
+  },
 
   login: async (credentials) => {
     console.log('[AuthStore] Login attempt for:', credentials.email);
@@ -35,11 +67,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   logout: async () => {
     try {
-      await authService.logout();
+      if (!useAuthStore.getState().isGuest) {
+        await authService.logout();
+      }
       set({
         user: null,
         company: null,
         isAuthenticated: false,
+        isGuest: false,
         isLoading: false,
       });
     } catch (error) {
