@@ -88,7 +88,7 @@ export function ApiSettingsPanel() {
     setConfigs(updatedConfigs);
   };
 
-  const testConnection = async (channel: 'meta' | 'google' | 'tiktok') => {
+  const testConnection = async (channel: 'meta' | 'google' | 'tiktok' | 'linkedin') => {
     setTestingChannel(channel);
 
     const channelConfig = configs.get(channel);

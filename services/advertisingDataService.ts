@@ -117,23 +117,21 @@ export class AdvertisingDataService {
   private getMockData(dateStart: Date, dateEnd: Date): NormalizedAdData[] {
     return spesaData
       .filter(spesa => {
-        const spesaDate = spesa.data_spesa;
-        return spesaDate >= dateStart && spesaDate <= dateEnd;
+        return spesa.data >= dateStart && spesa.data <= dateEnd;
       })
       .map(spesa => ({
         channel: this.mapCanaleToChannel(spesa.canale),
         campaign_id: `campaign_${spesa.id}`,
         campaign_name: `Campagna ${spesa.canale}`,
-        date: spesa.data_spesa,
-        spend: spesa.importo,
-        impressions: Math.floor(spesa.importo * 100), // Mock impressions
-        clicks: Math.floor(spesa.importo * 2), // Mock clicks
+        date: spesa.data,
+        spend: spesa.spesa,
+        impressions: spesa.impression,
+        clicks: spesa.click,
         conversions: 0,
         conversion_value: 0,
-        ctr: 2.0,
-        cpc: spesa.importo / Math.max(1, Math.floor(spesa.importo * 2)),
+        ctr: spesa.impression > 0 ? (spesa.click / spesa.impression) * 100 : 0,
+        cpc: spesa.spesa / Math.max(1, spesa.click),
         roas: 0,
-        store_id: spesa.negozio_id,
       }));
   }
 
@@ -144,14 +142,10 @@ export class AdvertisingDataService {
     canale: CanaleEnum
   ): 'meta' | 'google' | 'tiktok' | 'linkedin' | 'other' {
     switch (canale) {
-      case CanaleEnum.MetaAds:
+      case CanaleEnum.Meta:
         return 'meta';
-      case CanaleEnum.GoogleAds:
+      case CanaleEnum.Google:
         return 'google';
-      case CanaleEnum.TikTokAds:
-        return 'tiktok';
-      case CanaleEnum.LinkedInAds:
-        return 'linkedin';
       default:
         return 'other';
     }
@@ -180,7 +174,7 @@ export class AdvertisingDataService {
   /**
    * Test connection to a specific channel
    */
-  async testConnection(channel: 'meta' | 'google' | 'tiktok'): Promise<boolean> {
+  async testConnection(channel: 'meta' | 'google' | 'tiktok' | 'linkedin'): Promise<boolean> {
     try {
       const config = this.channelConfigs.get(channel);
       if (!config?.enabled || !config.credentials.accountId) {
@@ -198,6 +192,8 @@ export class AdvertisingDataService {
         case 'tiktok':
           response = await this.tiktokClient.getAdvertiserInfo(config.credentials.accountId);
           break;
+        default:
+          return false; // nessun connettore per questo canale
       }
 
       return response?.success || false;

@@ -52,7 +52,7 @@ export function ChannelROASChart({ data, isLoading }: ChannelROASChartProps) {
                     formatter={(value: number) => [`${value.toFixed(2)}x`, "ROAS"]}
                 />
                 <ReferenceLine x={TARGET_ROAS} stroke="#a78bfa" strokeDasharray="4 4" >
-                    <Legend content={<div className="text-xs text-purple-400">Target</div>} position="top" />
+                    <Legend content={<div className="text-xs text-purple-400">Target</div>} />
                 </ReferenceLine>
                 <Bar dataKey="ROAS" fill="#14b8a6" barSize={25}>
                     {data.map((entry, index) => (

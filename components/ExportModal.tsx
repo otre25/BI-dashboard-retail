@@ -23,7 +23,7 @@ const exportFormats = [
 ];
 
 export function ExportModal({ isOpen, onClose }: ExportModalProps) {
-  const { modalRef } = useModal(isOpen, onClose);
+  const { modalRef } = useModal({ isOpen, onClose });
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set(exportItems.map(item => item.id)));
   const [selectedFormat, setSelectedFormat] = useState<string>('pdf');
 

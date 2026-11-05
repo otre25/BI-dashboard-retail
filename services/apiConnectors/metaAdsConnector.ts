@@ -83,7 +83,7 @@ export async function fetchMetaAdsData(
         until: dateTo.toISOString().split('T')[0],
       }),
       level: 'campaign',
-      time_increment: 1, // Daily breakdown
+      time_increment: '1', // Daily breakdown
       limit: '500',
     });
 

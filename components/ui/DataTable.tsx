@@ -153,7 +153,7 @@ export function DataTable<T>({ columns, data, caption }: DataTableProps<T>) {
                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-300"
                   >
                     {col.cell
-                      ? col.cell({ row: { original: row }, getValue: () => col.accessorKey ? row[col.accessorKey] : null })
+                      ? col.cell({ row: { original: row }, getValue: <V,>() => (col.accessorKey ? row[col.accessorKey] : null) as V })
                       : col.accessorKey ? String(row[col.accessorKey] ?? '') : ''}
                   </td>
                 ))}

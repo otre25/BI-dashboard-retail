@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --cache /tmp/empty-cache
 
+      - name: Typecheck
+        run: npx tsc --noEmit
+
       - name: Build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}

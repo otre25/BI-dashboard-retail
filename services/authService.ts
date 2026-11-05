@@ -201,7 +201,7 @@ export class AuthService {
           currency: 'EUR',
           timezone: 'Europe/Rome',
           fiscalYearStart: '01-01',
-          defaultDateRange: '30d',
+          defaultDateRange: 30,
         },
       };
       return { user, company };

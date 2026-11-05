@@ -100,6 +100,7 @@ export const useKPIData = (
 
         return {
             spesaAdv: { value: currentMetrics.spesaAdvTotale, comparison: getComparison(currentMetrics.spesaAdvTotale, previousMetrics.spesaAdvTotale, true) },
+            roas: { value: currentMetrics.roas, comparison: getComparison(currentMetrics.roas, previousMetrics.roas) },
             mer: { value: currentMetrics.mer, status: currentMetrics.mer > 5 ? 'green' as const : currentMetrics.mer > 3 ? 'yellow' as const : 'red' as const, comparison: getComparison(currentMetrics.mer, previousMetrics.mer) },
             cac: { value: currentMetrics.cac, comparison: getComparison(currentMetrics.cac, previousMetrics.cac, true) },
             conversionRate: { value: currentMetrics.conversionRate, comparison: getComparison(currentMetrics.conversionRate, previousMetrics.conversionRate) },

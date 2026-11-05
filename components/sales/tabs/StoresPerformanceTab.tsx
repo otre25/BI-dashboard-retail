@@ -14,9 +14,9 @@ interface StoresPerformanceTabProps {
 }
 
 const getBadge = (rank: number) => {
-    if (rank === 1) return <Award className="w-5 h-5 text-yellow-400" title="Gold" />;
-    if (rank === 2) return <Award className="w-5 h-5 text-gray-300" title="Silver" />;
-    if (rank === 3) return <Award className="w-5 h-5 text-yellow-600" title="Bronze" />;
+    if (rank === 1) return <Award className="w-5 h-5 text-yellow-400" aria-label="Gold" />;
+    if (rank === 2) return <Award className="w-5 h-5 text-gray-300" aria-label="Silver" />;
+    if (rank === 3) return <Award className="w-5 h-5 text-yellow-600" aria-label="Bronze" />;
     return null;
 };
 

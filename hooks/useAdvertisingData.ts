@@ -129,7 +129,7 @@ export const useAdvertisingData = (startDate: Date, endDate: Date) => {
             const { spend = 0, leads = 0, revenue = 0 } = insights as any;
             return {
                 name: c.name,
-                status: c.status,
+                status: c.status as 'active' | 'paused',
                 daily_budget: c.daily_budget,
                 spend,
                 results: leads,
@@ -156,7 +156,7 @@ export const useAdvertisingData = (startDate: Date, endDate: Date) => {
             return {
                 name: c.name,
                 type: c.type,
-                status: c.status,
+                status: c.status as 'active' | 'paused',
                 spend,
                 quality_score: c.quality_score,
                 impression_share: c.impression_share,

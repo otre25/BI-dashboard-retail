@@ -1,5 +1,5 @@
 import React from 'react';
-import { Funnel, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/Card';
 import { DataTable, type ColumnDef } from '../../ui/DataTable';
 import { AlertCard } from '../shared/AlertCard';

@@ -165,7 +165,7 @@ export interface SalesSyncStatus {
 }
 
 // Common field patterns for auto-detection
-export const SALES_FIELD_PATTERNS: Record<keyof Partial<UnifiedSalesData>, RegExp[]> = {
+export const SALES_FIELD_PATTERNS: Partial<Record<keyof UnifiedSalesData, RegExp[]>> = {
   date: [
     /^date$/i,
     /^data$/i,
